@@ -13,8 +13,6 @@ on:
   pull_request:
     types:
       - "opened"
-      - "synchronize"
-      - "reopened"
   issues:
     types:
       - "opened"

@@ -11,8 +11,6 @@ on:
   pull_request:
     types:
       - 'opened'
-      - 'synchronize'
-      - 'reopened'
   issues:
     types:
       - 'opened'
@@ -96,7 +94,7 @@ jobs:
             const request = process.env.REQUEST;
             core.setOutput('request', request);
 
-            if (['pull_request.opened', 'pull_request.synchronize', 'pull_request.reopened'].includes(eventType)) {
+            if (eventType === 'pull_request.opened') {
               core.setOutput('command', 'review');
             } else if (['issues.opened', 'issues.reopened'].includes(eventType)) {
               core.setOutput('command', 'triage');
