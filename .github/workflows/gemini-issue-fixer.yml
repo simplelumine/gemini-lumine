@@ -38,6 +38,12 @@ jobs:
       - name: 'Checkout repository'
         uses: 'actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8' # ratchet:actions/checkout@v6
 
+      - name: 'Checkout prompt repository'
+        uses: 'actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8'
+        with:
+          repository: 'simplelumine/lumine-gemini'
+          path: '.gemini-prompts'
+
       - name: 'Run Gemini PR Create'
         uses: 'google-github-actions/run-gemini-cli@main' # ratchet:exclude
         id: 'gemini_pr_create'
@@ -92,4 +98,4 @@ jobs:
                 "outfile": ".gemini/telemetry.log"
               }
             }
-          prompt: './.github/prompts/gemini-issue-fixer.toml'
+          prompt: './.gemini-prompts/prompts/gemini-issue-fixer.toml'

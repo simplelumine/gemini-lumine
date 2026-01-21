@@ -86,8 +86,11 @@ jobs:
           ISSUE_COUNT="$(echo "${ISSUES}" | jq 'length')"
           echo "✅ Found ${ISSUE_COUNT} issue(s) to triage! 🎯"
 
-      - name: 'Checkout repository'
-        uses: 'actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8' # ratchet:actions/checkout@v6
+      - name: 'Checkout prompt repository'
+        uses: 'actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8'
+        with:
+          repository: 'simplelumine/lumine-gemini'
+          path: '.gemini-prompts'
 
       - name: "Run Gemini Issue Analysis"
         id: "gemini_issue_analysis"
@@ -132,7 +135,7 @@ jobs:
                 ]
               }
             }
-          prompt: "./.github/prompts/gemini-scheduled-triage.toml"
+          prompt: "./.gemini-prompts/prompts/gemini-scheduled-triage.toml"
 
   label:
     runs-on: "ubuntu-latest"

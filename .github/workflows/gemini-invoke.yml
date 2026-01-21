@@ -37,8 +37,11 @@ jobs:
           permission-issues: 'write'
           permission-pull-requests: 'write'
 
-      - name: 'Checkout repository'
-        uses: 'actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8' # ratchet:actions/checkout@v6
+      - name: 'Checkout prompt repository'
+        uses: 'actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8'
+        with:
+          repository: 'simplelumine/lumine-gemini'
+          path: '.gemini-prompts'
 
       - name: 'Run Gemini CLI'
         id: 'run_gemini'
@@ -123,4 +126,4 @@ jobs:
                 ]
               }
             }
-          prompt: './.github/prompts/gemini-invoke.toml'
+          prompt: './.gemini-prompts/prompts/gemini-invoke.toml'

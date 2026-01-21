@@ -55,8 +55,11 @@ jobs:
             core.info(`Found ${labelNames.length} labels: ${labelNames.join(', ')}`);
             return labelNames;
 
-      - name: 'Checkout repository'
-        uses: 'actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8' # ratchet:actions/checkout@v6
+      - name: 'Checkout prompt repository'
+        uses: 'actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8'
+        with:
+          repository: 'simplelumine/lumine-gemini'
+          path: '.gemini-prompts'
 
       - name: 'Run Gemini issue analysis'
         id: 'gemini_analysis'
@@ -99,7 +102,7 @@ jobs:
                 ]
               }
             }
-          prompt: './.github/prompts/gemini-triage.toml'
+          prompt: './.gemini-prompts/prompts/gemini-triage.toml'
 
   label:
     runs-on: 'ubuntu-latest'
