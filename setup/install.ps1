@@ -18,7 +18,7 @@ $TargetWorkflowDir = ".github/workflows"
 # --- Functions ---
 
 function Install-Workflows {
-    Write-Host "`n[1] Installing Gemini Workflows & Prompts..." -ForegroundColor Cyan
+    Write-Host "`n[*] Installing Workflows Only..." -ForegroundColor Cyan
     if (-not (Test-Path $TargetWorkflowDir)) { New-Item -ItemType Directory -Force -Path $TargetWorkflowDir | Out-Null }
 
     # Install YAML
@@ -38,11 +38,7 @@ function Install-Workflows {
         Write-Host "Workflow installed." -ForegroundColor Green
     }
 
-    # Install TOML Commands
-    $TargetCommandsDir = ".github/commands"
-    if (-not (Test-Path $TargetCommandsDir)) { New-Item -ItemType Directory -Force -Path $TargetCommandsDir | Out-Null }
-    Copy-Item -Path "$ScriptDir/../.github/commands/*" -Destination $TargetCommandsDir -Recurse -Force
-    Write-Host "Prompts installed to $TargetCommandsDir." -ForegroundColor Green
+
 }
 
 function Configure-Vars-Secrets {
@@ -135,25 +131,25 @@ function Delete-Conflict-Labels {
 
 while ($true) {
     Write-Host "`nGemini Workflow Setup" -ForegroundColor Yellow
-    Write-Host "1. Install Workflows & Prompts"
-    Write-Host "2. Configure Variables & Secrets"
-    Write-Host "3. Create Standard Labels"
-    Write-Host "4. Delete Conflicting Default Labels"
-    Write-Host "5. Run All (Recommended for new repo)"
+    Write-Host "1. Run All (Recommended for new repo)"
+    Write-Host "2. Install Workflows Only"
+    Write-Host "3. Configure Variables & Secrets"
+    Write-Host "4. Create Standard Labels"
+    Write-Host "5. Delete Conflicting Default Labels"
     Write-Host "0. Exit"
     
     $choice = Read-Host "Select an option"
     switch ($choice) {
-        "1" { Install-Workflows }
-        "2" { Configure-Vars-Secrets }
-        "3" { Create-Labels }
-        "4" { Delete-Conflict-Labels }
-        "5" { 
+        "1" { 
             Install-Workflows
             Configure-Vars-Secrets
             Create-Labels
             Delete-Conflict-Labels
         }
+        "2" { Install-Workflows }
+        "3" { Configure-Vars-Secrets }
+        "4" { Create-Labels }
+        "5" { Delete-Conflict-Labels }
         "0" { exit }
         default { Write-Host "Invalid option." -ForegroundColor Red }
     }

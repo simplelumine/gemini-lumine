@@ -25,7 +25,7 @@ TARGET_WORKFLOW_DIR=".github/workflows"
 # --- Functions ---
 
 install_workflows() {
-    echo -e "\n\033[0;36m[1] Installing Gemini Workflows & Prompts...\033[0m"
+    echo -e "\n\033[0;36m[*] Installing Workflows Only...\033[0m"
     mkdir -p "$TARGET_WORKFLOW_DIR"
 
     # Install YAML
@@ -45,12 +45,7 @@ install_workflows() {
         echo "Workflow installed."
     fi
 
-    # Install TOML Commands
-    TARGET_COMMANDS_DIR=".github/commands"
-    mkdir -p "$TARGET_COMMANDS_DIR"
-    cp -r "${SCRIPT_DIR}/../.github/commands/"* "$TARGET_COMMANDS_DIR"
-    echo "Prompts installed to $TARGET_COMMANDS_DIR."
-}
+
 
 configure_vars_secrets() {
     echo -e "\n\033[0;36m[2] Configuring Variables & Secrets...\033[0m"
@@ -109,6 +104,8 @@ create_labels() {
         ["kind/enhancement"]="#a2eeef:New feature or request"
         ["kind/question"]="#d876e3:Further information is requested"
         ["kind/documentation"]="#0075ca:Improvements or additions to documentation"
+        ["status/gemini-triaged"]="#6f42c1:Issue has been successfully analyzed and classified by Gemini"
+        ["status/needs-triage"]="#db2869:Issue needs to be triaged by AI or maintainers"
     )
 
     for label in "${!LABELS[@]}"; do
@@ -143,19 +140,25 @@ show_menu() {
 }
 
 while true; do
-    show_menu
+    echo -e "\n\033[1;33mGemini Workflow Setup\033[0m"
+    echo "1. Run All (Recommended for new repo)"
+    echo "2. Install Workflows Only"
+    echo "3. Configure Variables & Secrets"
+    echo "4. Create Standard Labels"
+    echo "5. Delete Conflicting Default Labels"
+    echo "0. Exit"
     read -p "Select an option: " choice
     case $choice in
-        1) install_workflows ;;
-        2) configure_vars_secrets ;;
-        3) create_labels ;;
-        4) delete_conflict_labels ;;
-        5) 
+        1) 
             install_workflows
             configure_vars_secrets
             create_labels
             delete_conflict_labels
             ;;
+        2) install_workflows ;;
+        3) configure_vars_secrets ;;
+        4) create_labels ;;
+        5) delete_conflict_labels ;;
         0) exit 0 ;;
         *) echo "Invalid option." ;;
     esac
