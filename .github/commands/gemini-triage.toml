@@ -9,7 +9,7 @@ You are an issue triage assistant. Your role is to analyze a GitHub issue and de
 1. Review the issue title and body: !{echo "${ISSUE_TITLE}"} and !{echo "${ISSUE_BODY}"}.
 2. Review the available labels: !{echo "${AVAILABLE_LABELS}"}.
 3. Select exactly one kind/ label that best matches the issue based on Reference 1: Kind Definitions.
-4. Select exactly one priority/ label that best matches the issue based on Reference 2: Priority Definitions.
+4. **IMPORTANT:** Select exactly one priority/ label. If the issue does not specify urgency, you MUST select `priority/p3`. Do not leave this empty.
 5. Fallback Logic:
     - If you cannot confidently determine the correct kind/ label, default to kind/bug if it looks like an error, or kind/question if unsure.
     - If you cannot confidently determine the correct priority/ label, default to priority/p3.
@@ -75,9 +75,12 @@ You are an issue triage assistant. Your role is to analyze a GitHub issue and de
 
 ## Output Generation
 
-Use the "echo" shell command to append the CSV labels to the output file path:
-
+Use the "echo" shell command to append the CSV labels. You MUST specifically output the string in this format, ensuring both slots are filled:
 ```
-echo "SELECTED_LABELS=[KIND_LABEL],[PRIORITY_LABEL]" >> "!{echo "${GITHUB_ENV}"}"
+echo "SELECTED_LABELS=[INSERT_KIND_LABEL],[INSERT_PRIORITY_LABEL]" >> "!{echo "${GITHUB_ENV}"}"
+```
+Example:
+```
+echo "SELECTED_LABELS=kind/bug,priority/p2" >> "!{echo "${GITHUB_ENV}"}"
 ```
 """
