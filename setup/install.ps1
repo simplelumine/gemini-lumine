@@ -107,6 +107,8 @@ function Create-Labels {
         "kind/enhancement" = @{ Color = "a2eeef"; Description = "New feature or request" }
         "kind/question"    = @{ Color = "d876e3"; Description = "Further information is requested" }
         "kind/documentation" = @{ Color = "0075ca"; Description = "Improvements or additions to documentation" }
+        "status/gemini-triaged" = @{ Color = "6f42c1"; Description = "Issue has been successfully analyzed and classified by Gemini" }
+        "status/needs-triage" = @{ Color = "db2869"; Description = "Issue needs to be triaged by AI or maintainers" }
     }
 
     foreach ($label in $Labels.Keys) {
