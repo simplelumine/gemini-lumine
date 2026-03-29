@@ -41,17 +41,6 @@ jobs:
       - name: 'Checkout repository'
         uses: 'actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8' # ratchet:actions/checkout@v6
 
-      - name: 'Checkout prompt repository'
-        uses: 'actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8'
-        with:
-          repository: 'simplelumine/lumine-gemini'
-          path: '.gemini-prompts'
-
-      - name: 'Register custom commands'
-        run: |
-          mkdir -p .gemini/commands
-          cp .gemini-prompts/prompts/*.toml .gemini/commands/
-
       - name: 'Run Gemini pull request review'
         uses: 'google-github-actions/run-gemini-cli@main' # ratchet:exclude
         id: 'gemini_pr_review'
@@ -63,6 +52,7 @@ jobs:
           PULL_REQUEST_NUMBER: '${{ github.event.pull_request.number || github.event.issue.number }}'
           REPOSITORY: '${{ github.repository }}'
           ADDITIONAL_CONTEXT: '${{ inputs.additional_context }}'
+          GEMINI_API_KEY: '${{ secrets.GEMINI_API_KEY }}'
         with:
           gcp_location: '${{ vars.GOOGLE_CLOUD_LOCATION }}'
           gcp_project_id: '${{ vars.GOOGLE_CLOUD_PROJECT }}'
@@ -96,13 +86,12 @@ jobs:
                     "--rm",
                     "-e",
                     "GITHUB_PERSONAL_ACCESS_TOKEN",
-                    "ghcr.io/github/github-mcp-server:v0.18.0"
+                    "ghcr.io/github/github-mcp-server:v0.27.0"
                   ],
                   "includeTools": [
                     "add_comment_to_pending_review",
-                    "create_pending_pull_request_review",
                     "pull_request_read",
-                    "submit_pending_pull_request_review"
+                    "pull_request_review_write"
                   ],
                   "env": {
                     "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
@@ -119,4 +108,8 @@ jobs:
                 ]
               }
             }
-          prompt: '/lumine-gemini-review'
+          extensions: |
+            [
+              "https://github.com/gemini-cli-extensions/code-review"
+            ]
+          prompt: '/pr-code-review'

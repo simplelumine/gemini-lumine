@@ -47,7 +47,7 @@ jobs:
   dispatch:
     # For PRs: only if not from a fork
     # For issues: only on open/reopen
-    # For comments: only if user types @gemini and is OWNER/MEMBER/COLLABORATOR
+    # For comments: only if user types @lumine and is OWNER/MEMBER/COLLABORATOR
     if: |-
       (
         github.event_name == 'pull_request' &&
@@ -57,7 +57,7 @@ jobs:
         contains(fromJSON('["opened", "reopened"]'), github.event.action)
       ) || (
         github.event.sender.type == 'User' &&
-        startsWith(github.event.comment.body || github.event.review.body || github.event.issue.body, '@gemini') &&
+        startsWith(github.event.comment.body || github.event.review.body || github.event.issue.body, '@lumine') &&
         contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association || github.event.review.author_association || github.event.issue.author_association)
       )
     runs-on: 'ubuntu-latest'
@@ -99,16 +99,20 @@ jobs:
               core.setOutput('command', 'review');
             } else if (['issues.opened', 'issues.reopened'].includes(eventType)) {
               core.setOutput('command', 'triage');
-            } else if (request.startsWith("@gemini /review")) {
+            } else if (request.startsWith("@lumine /review")) {
               core.setOutput('command', 'review');
-              const additionalContext = request.replace(/^@gemini \/review/, '').trim();
+              const additionalContext = request.replace(/^@lumine \/review/, '').trim();
               core.setOutput('additional_context', additionalContext);
-            } else if (request.startsWith("@gemini /triage")) {
+            } else if (request.startsWith("@lumine /triage")) {
               core.setOutput('command', 'triage');
-            } else if (request.startsWith("@gemini /fix")) {
+            } else if (request.startsWith("@lumine /approve")) {
+              core.setOutput('command', 'approve');
+              const additionalContext = request.replace(/^@lumine \/approve/, '').trim();
+              core.setOutput('additional_context', additionalContext);
+            } else if (request.startsWith("@lumine /fix")) {
               core.setOutput('command', 'fix');
-            } else if (request.startsWith("@gemini")) {
-              const additionalContext = request.replace(/^@gemini/, '').trim();
+            } else if (request.startsWith("@lumine")) {
+              const additionalContext = request.replace(/^@lumine/, '').trim();
               core.setOutput('command', 'invoke');
               core.setOutput('additional_context', additionalContext);
             } else {
@@ -182,12 +186,27 @@ jobs:
       additional_context: '${{ needs.dispatch.outputs.additional_context }}'
     secrets: 'inherit'
 
+  plan-execute:
+    needs: 'dispatch'
+    if: |-
+      ${{ needs.dispatch.outputs.command == 'approve' }}
+    uses: './.github/workflows/gemini-plan-execute.yml'
+    permissions:
+      contents: 'write'
+      id-token: 'write'
+      issues: 'write'
+      pull-requests: 'write'
+    with:
+      additional_context: '${{ needs.dispatch.outputs.additional_context }}'
+    secrets: 'inherit'
+
   fallthrough:
     needs:
       - 'dispatch'
       - 'review'
       - 'triage'
       - 'invoke'
+      - 'plan-execute'
     if: |-
       ${{ always() && !cancelled() && (failure() || needs.dispatch.outputs.command == 'fallthrough') }}
     runs-on: 'ubuntu-latest'

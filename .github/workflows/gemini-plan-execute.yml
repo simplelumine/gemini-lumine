@@ -1,10 +1,15 @@
-name: '🧙 Gemini Issue Fixer'
+name: '🧙 Gemini Plan Execution'
 
 on:
   workflow_call:
+    inputs:
+      additional_context:
+        type: 'string'
+        description: 'Any additional context from the request'
+        required: false
 
 concurrency:
-  group: '${{ github.workflow }}-${{ github.head_ref || github.ref }}-${{ github.event.issue.number }}'
+  group: '${{ github.workflow }}-plan-execute-${{ github.event_name }}-${{ github.event.pull_request.number || github.event.issue.number }}'
   cancel-in-progress: true
 
 defaults:
@@ -12,17 +17,16 @@ defaults:
     shell: 'bash'
 
 jobs:
-  create-pr:
+  plan-execute:
     timeout-minutes: 30
     runs-on: 'ubuntu-latest'
     permissions:
-      contents: 'write' # Enable reading and modifying code
-      id-token: 'write' # Enable minting an identity token
-      issues: 'write' # Enable updating issues, such as posting a comment
-      pull-requests: 'write' # Enable creating pull requests
+      contents: 'write'
+      id-token: 'write'
+      issues: 'write'
+      pull-requests: 'write'
 
     steps:
-      # Mint a token so that the comments show up as gemini-cli instead of github-actions.
       - name: 'Mint identity token'
         id: 'mint_identity_token'
         if: |-
@@ -35,7 +39,7 @@ jobs:
           permission-issues: 'write'
           permission-pull-requests: 'write'
 
-      - name: 'Checkout repository'
+      - name: 'Checkout Code'
         uses: 'actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8' # ratchet:actions/checkout@v6
 
       - name: 'Checkout prompt repository'
@@ -49,19 +53,19 @@ jobs:
           mkdir -p .gemini/commands
           cp .gemini-prompts/prompts/*.toml .gemini/commands/
 
-      - name: 'Run Gemini PR Create'
+      - name: 'Run Gemini CLI'
+        id: 'run_gemini'
         uses: 'google-github-actions/run-gemini-cli@main' # ratchet:exclude
-        id: 'gemini_pr_create'
         env:
           GOOGLE_GEMINI_BASE_URL: '${{ vars.GOOGLE_GEMINI_BASE_URL }}'
-          GITHUB_TOKEN: '${{ steps.mint_identity_token.outputs.token || secrets.GITHUB_TOKEN }}'
-          REPOSITORY: '${{ github.repository }}'
-          ISSUE_NUMBER: '${{ github.event.issue.number }}'
-          ISSUE_TITLE: '${{ github.event.issue.title }}'
-          ISSUE_BODY: '${{ github.event.issue.body }}'
-          BRANCH_NAME: 'gemini-fix-${{ github.event.issue.number }}'
+          TITLE: '${{ github.event.pull_request.title || github.event.issue.title }}'
+          DESCRIPTION: '${{ github.event.pull_request.body || github.event.issue.body }}'
           EVENT_NAME: '${{ github.event_name }}'
-          TRIGGERING_ACTOR: '${{ github.triggering_actor }}'
+          GITHUB_TOKEN: '${{ steps.mint_identity_token.outputs.token || secrets.GITHUB_TOKEN || github.token }}'
+          IS_PULL_REQUEST: '${{ !!github.event.pull_request }}'
+          ISSUE_NUMBER: '${{ github.event.pull_request.number || github.event.issue.number }}'
+          REPOSITORY: '${{ github.repository }}'
+          ADDITIONAL_CONTEXT: '${{ inputs.additional_context }}'
         with:
           gcp_location: '${{ vars.GOOGLE_CLOUD_LOCATION }}'
           gcp_project_id: '${{ vars.GOOGLE_CLOUD_PROJECT }}'
@@ -75,11 +79,16 @@ jobs:
           use_gemini_code_assist: '${{ vars.GOOGLE_GENAI_USE_GCA }}'
           use_vertex_ai: '${{ vars.GOOGLE_GENAI_USE_VERTEXAI }}'
           upload_artifacts: '${{ vars.UPLOAD_ARTIFACTS }}'
+          workflow_name: 'gemini-plan-execute'
           settings: |-
             {
-              "debug": ${{ fromJSON(vars.GEMINI_DEBUG || vars.ACTIONS_STEP_DEBUG || false) }},
               "model": {
-                "maxSessionTurns": 200
+                "maxSessionTurns": 25
+              },
+              "telemetry": {
+                "enabled": true,
+                "target": "local",
+                "outfile": ".gemini/telemetry.log"
               },
               "mcpServers": {
                 "github": {
@@ -92,15 +101,38 @@ jobs:
                     "GITHUB_PERSONAL_ACCESS_TOKEN",
                     "ghcr.io/github/github-mcp-server:v0.27.0"
                   ],
+                  "includeTools": [
+                    "add_issue_comment",
+                    "issue_read",
+                    "list_issues",
+                    "search_issues",
+                    "create_pull_request",
+                    "pull_request_read",
+                    "list_pull_requests",
+                    "search_pull_requests",
+                    "create_branch",
+                    "create_or_update_file",
+                    "delete_file",
+                    "fork_repository",
+                    "get_commit",
+                    "get_file_contents",
+                    "list_commits",
+                    "push_files",
+                    "search_code"
+                  ],
                   "env": {
                     "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
                   }
                 }
               },
-              "telemetry": {
-                "enabled": true,
-                "target": "local",
-                "outfile": ".gemini/telemetry.log"
+              "tools": {
+                "core": [
+                  "run_shell_command(cat)",
+                  "run_shell_command(echo)",
+                  "run_shell_command(grep)",
+                  "run_shell_command(head)",
+                  "run_shell_command(tail)"
+                ]
               }
             }
-          prompt: '/lumine-gemini-issue-fixer'
+          prompt: '/lumine-gemini-plan-execute'

@@ -37,6 +37,9 @@ jobs:
           permission-issues: 'write'
           permission-pull-requests: 'write'
 
+      - name: 'Checkout Code'
+        uses: 'actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8' # ratchet:actions/checkout@v6
+
       - name: 'Checkout prompt repository'
         uses: 'actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8'
         with:
@@ -94,26 +97,19 @@ jobs:
                     "--rm",
                     "-e",
                     "GITHUB_PERSONAL_ACCESS_TOKEN",
-                    "ghcr.io/github/github-mcp-server:v0.18.0"
+                    "ghcr.io/github/github-mcp-server:v0.27.0"
                   ],
                   "includeTools": [
                     "add_issue_comment",
-                    "get_issue",
-                    "get_issue_comments",
+                    "issue_read",
                     "list_issues",
                     "search_issues",
-                    "create_pull_request",
                     "pull_request_read",
                     "list_pull_requests",
                     "search_pull_requests",
-                    "create_branch",
-                    "create_or_update_file",
-                    "delete_file",
-                    "fork_repository",
                     "get_commit",
                     "get_file_contents",
                     "list_commits",
-                    "push_files",
                     "search_code"
                   ],
                   "env": {

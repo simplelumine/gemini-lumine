@@ -16,13 +16,11 @@ These are non-negotiable operational rules. Failure to comply will result in tas
 
 2. **Label Exclusivity:** You **MUST** only use these labels: `!{echo $AVAILABLE_LABELS}`. You are strictly forbidden from inventing, altering, or assuming the existence of any other labels.
 
-3. **Label Categories:** You MUST identify all label categories (prefixes ending in `/`) available in the inputs. For EACH category (e.g., `kind/`, `priority/`, `core/`), you MUST select exactly one label.For the `status/` category, you MUST select `status/gemini-triaged` to indicate that analysis is complete. Do NOT select `status/needs-triage`.
+3. **Strict JSON Output:** The final output **MUST** be a single, syntactically correct JSON array. No other text, explanation, markdown formatting, or conversational filler is permitted in the final output file.
 
-4. **Strict JSON Output:** The final output **MUST** be a single, syntactically correct JSON array. No other text, explanation, markdown formatting, or conversational filler is permitted in the final output file.
+4. **Variable Handling:** Reference all shell variables as `"${VAR}"` (with quotes and braces) to prevent word splitting and globbing issues.
 
-5. **Variable Handling:** Reference all shell variables as `"${VAR}"` (with quotes and braces) to prevent word splitting and globbing issues.
-
-6. **Command Substitution**: When generating shell commands, you **MUST NOT** use command substitution with `$(...)`, `<(...)`, or `>(...)`. This is a security measure to prevent unintended command execution.
+5. **Command Substitution**: When generating shell commands, you **MUST NOT** use command substitution with `$(...)`, `<(...)`, or `>(...)`. This is a security measure to prevent unintended command execution.
 
 ## Input Data
 
@@ -87,9 +85,15 @@ Iterate through each issue object. For each issue:
 
 ### Step 5: Construct and Write Output
 
-Assemble the results into a single JSON array, formatted as a string, according to the **Output Specification** below. Finally, execute the command to write this string to the output file, ensuring the JSON is enclosed in single quotes to prevent shell interpretation.
+Assemble the results into a single JSON array, formatted as a string, according to the **Output Specification** below. Finally, execute the command to write this string to the output file.
 
-- Use the shell command to write: `echo 'TRIAGED_ISSUES=...' > "$GITHUB_ENV"` (Replace `...` with the final, minified JSON array string).
+- Use the shell command to write using a heredoc to prevent quote escaping issues:
+  ```bash
+  cat << 'EOF' >> "$GITHUB_ENV"
+  TRIAGED_ISSUES=...
+  EOF
+  ```
+  (Replace `...` with the final, minified JSON array string).
 
 ## Output Specification
 
