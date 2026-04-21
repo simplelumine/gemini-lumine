@@ -29,10 +29,10 @@ jobs:
       - name: 'Mint identity token'
         id: 'mint_identity_token'
         if: |-
-          ${{ vars.APP_ID }}
+          ${{ vars.CLIENT_ID }}
         uses: 'actions/create-github-app-token@v3' # ratchet:actions/create-github-app-token@v3
         with:
-          app-id: '${{ vars.APP_ID }}'
+          client-id: '${{ vars.CLIENT_ID }}'
           private-key: '${{ secrets.APP_PRIVATE_KEY }}'
           permission-contents: 'read'
           permission-issues: 'write'
